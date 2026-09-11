@@ -1,0 +1,308 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// USER
+// ============================================================
+// Clerk reste la source de vérité pour l'identité.
+// clerkId permet de relier l'utilisateur Clerk à notre DB.
+// ============================================================
+
+model User {
+  id      String @id @default(cuid())
+  clerkId String @unique
+
+  role UserRole @default(USER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  merchantProfile MerchantProfile?
+  favorites       Favorite[]
+
+  @@index([role])
+  @@index([createdAt])
+}
+
+// ============================================================
+// MERCHANT PROFILE
+// ============================================================
+// Informations métier du vendeur.
+// Les informations d'identité principales restent chez Clerk.
+// ============================================================
+
+model MerchantProfile {
+  id String @id @default(cuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  whatsappNumber String
+  displayName    String?
+  bio            String?
+
+  isVerified Boolean @default(false)
+  isActive   Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  shops Shop[]
+
+  @@index([whatsappNumber])
+  @@index([isActive])
+}
+
+// ============================================================
+// SHOP
+// ============================================================
+// Une boutique appartient à un marchand.
+// ============================================================
+
+model Shop {
+  id String @id @default(cuid())
+
+  merchantId String
+  merchant   MerchantProfile @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  name        String
+  slug        String  @unique
+  description String?
+
+  logoUrl       String?
+  coverImageUrl String?
+
+  status ShopStatus @default(PENDING_APPROVAL)
+
+  // Durée d'activité et modération par le Super Admin
+  approvedAt      DateTime?
+  expiresAt       DateTime?
+  activityMonths  Int?
+  rejectionReason String?
+  moderatedAt     DateTime?
+  moderatedBy     String?
+
+  // Permet de sélectionner les boutiques importantes
+  // sans créer une table supplémentaire.
+  isFeatured Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Soft delete
+  deletedAt DateTime?
+
+  // Relations
+  products Product[]
+
+  @@index([merchantId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([isFeatured])
+  @@index([createdAt])
+}
+
+// ============================================================
+// CATEGORY
+// ============================================================
+// Les catégories peuvent avoir des sous-catégories.
+// Exemple :
+// Informatique
+//    ├── Ordinateurs
+//    ├── Téléphones
+//    └── Accessoires
+// ============================================================
+
+model Category {
+  id String @id @default(cuid())
+
+  name String
+  slug String @unique
+
+  description String?
+
+  isActive Boolean @default(true)
+
+  // Catégorie parent éventuelle
+  parentId String?
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryHierarchy")
+
+  // Relations
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@index([isActive])
+}
+
+// ============================================================
+// PRODUCT
+// ============================================================
+// Produit vendu/présenté dans une boutique.
+// AXIUMarket V1 est orienté découverte + WhatsApp.
+// ============================================================
+
+model Product {
+  id String @id @default(cuid())
+
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  name        String
+  slug        String
+  description String?
+
+  // Prix monétaire précis
+  price Decimal @db.Decimal(12, 2)
+
+  // Devise du produit
+  currency String @default("CDF") @db.VarChar(3)
+
+  // Gestion simple du stock pour V1
+  stockQuantity Int @default(0)
+
+  status ProductStatus @default(DRAFT)
+
+  // Modération par le Super Admin
+  isBlocked     Boolean   @default(false)
+  blockedReason String?
+  blockedAt     DateTime?
+
+  // Produit mis en avant
+  isFeatured Boolean @default(false)
+
+  // Compteur simple pour les produits populaires
+  viewCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Soft delete
+  deletedAt DateTime?
+
+  // Relations
+  images    ProductImage[]
+  favorites Favorite[]
+
+  // Un slug doit être unique dans une boutique,
+  // mais deux boutiques peuvent avoir le même slug.
+  @@unique([shopId, slug])
+  // Optimisation des recherches fréquentes
+  @@index([shopId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([isBlocked])
+  @@index([shopId, status])
+  @@index([categoryId, status])
+  @@index([status, createdAt])
+  @@index([status, viewCount])
+  @@index([isFeatured, createdAt])
+}
+
+// ============================================================
+// PRODUCT IMAGE
+// ============================================================
+// Les fichiers sont stockés sur ImageKit.
+// PostgreSQL conserve uniquement les métadonnées nécessaires.
+// ============================================================
+
+model ProductImage {
+  id String @id @default(cuid())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Identifiant du fichier chez ImageKit
+  imagekitFileId String @unique
+
+  // URL publique/optimisée ImageKit
+  url String
+
+  // Chemin du fichier chez ImageKit
+  filePath String?
+
+  // Nom original du fichier
+  fileName String?
+
+  width  Int?
+  height Int?
+
+  altText String?
+
+  // Permet de contrôler l'ordre des images
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([productId, sortOrder])
+}
+
+// ============================================================
+// FAVORITE
+// ============================================================
+// Un utilisateur ne peut mettre un produit en favori
+// qu'une seule fois.
+// ============================================================
+
+model Favorite {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  // Empêche les doublons
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  USER
+  SUPER_ADMIN
+}
+
+enum ShopStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  REJECTED
+  PAUSED
+  SUSPENDED
+  BLOCKED
+  EXPIRED
+  ARCHIVED
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  OUT_OF_STOCK
+  ARCHIVED
+}
