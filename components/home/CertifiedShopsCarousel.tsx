@@ -1,8 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight, ShieldCheck, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import ShopCard from "@/components/shops/ShopCard";
 import type { ShopCard as ShopCardType } from "@/types";
 

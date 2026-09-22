@@ -2,8 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ChevronRight, Store, TrendingUp } from "lucide-react";
+import { Search, ShieldCheck, MessageCircle, Store, ArrowRight } from "lucide-react";
 import Link from "next/link";
+
+const popularQueries = [
+  { label: "Smartphones", query: "téléphone" },
+  { label: "Chaussures & Mode", query: "mode" },
+  { label: "Ordinateurs & Accessoires", query: "informatique" },
+  { label: "Alimentation", query: "alimentation" },
+  { label: "Maison & Électroménager", query: "maison" },
+];
 
 export default function HeroSection() {
   const [query, setQuery] = useState("");
@@ -17,90 +25,115 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="hero-section relative" aria-labelledby="hero-heading">
-      <div className="axm-container py-20 md:py-28 relative z-10">
-        {/* Eyebrow */}
-        <div className="flex items-center justify-center mb-5">
-          <span className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 text-xs font-semibold px-4 py-1.5 rounded-full">
-            <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
-            La marketplace de votre quartier
-          </span>
-        </div>
+    <section
+      className="relative bg-gradient-to-b from-emerald-50/80 via-slate-50/60 to-white border-b border-slate-200/80 overflow-hidden"
+      aria-labelledby="hero-heading"
+    >
+      <div className="axm-container py-12 sm:py-16 md:py-20 relative z-10">
+        <div className="max-w-3xl mx-auto text-center">
+          {/* Market Badge */}
+          <div className="inline-flex items-center gap-2 bg-white border border-emerald-200 text-emerald-800 text-xs font-bold px-3.5 py-1.5 rounded-full mb-5 shadow-xs">
+            <Store className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
+            <span>Place de marché pour commerces de proximité</span>
+          </div>
 
-        {/* Headline */}
-        <h1
-          id="hero-heading"
-          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white text-center leading-tight mb-5 max-w-4xl mx-auto"
-        >
-          Découvrez les produits des commerces{" "}
-          <span className="text-green-300">près de chez vous</span>
-        </h1>
-
-        {/* Subheadline */}
-        <p className="text-base md:text-lg text-green-100 text-center mb-10 max-w-xl mx-auto leading-relaxed">
-          Explorez les boutiques locales, trouvez ce que vous cherchez et contactez
-          directement les marchands sur{" "}
-          <strong className="text-white">WhatsApp</strong>.
-        </p>
-
-        {/* Search Bar */}
-        <form
-          onSubmit={handleSearch}
-          className="flex items-center gap-0 bg-white rounded-2xl shadow-2xl overflow-hidden max-w-2xl mx-auto mb-8"
-          role="search"
-          aria-label="Rechercher des produits"
-        >
-          <label htmlFor="hero-search" className="sr-only">
-            Rechercher des produits ou boutiques
-          </label>
-          <Search className="w-5 h-5 text-slate-400 ml-4 shrink-0" aria-hidden="true" />
-          <input
-            id="hero-search"
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Téléphone, vêtements, alimentation..."
-            className="flex-1 py-4 px-3 text-slate-700 outline-none bg-transparent text-sm md:text-base placeholder:text-slate-400"
-          />
-          <button
-            type="submit"
-            className="btn-brand shrink-0 py-3 px-6 text-sm font-bold rounded-none rounded-r-2xl m-0.5"
+          {/* Headline */}
+          <h1
+            id="hero-heading"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.15] mb-4"
           >
-            Rechercher
-          </button>
-        </form>
+            Le grand marché digital de votre ville
+          </h1>
 
-        {/* Quick Links */}
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <span className="text-green-200 text-sm">Explorer :</span>
-          {["Électronique", "Mode", "Alimentation", "Beauté"].map((cat) => (
-            <Link
-              key={cat}
-              href={`/search?q=${encodeURIComponent(cat)}`}
-              className="text-sm bg-white/10 border border-white/20 text-white/90 px-3 py-1.5 rounded-full hover:bg-white/20 transition-colors"
+          {/* Subtitle */}
+          <p className="text-base sm:text-lg text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed font-normal">
+            Parcourez les rayons des boutiques locales, vérifiez la disponibilité des articles et commandez directement auprès des marchands sur WhatsApp.
+          </p>
+
+          {/* Search Console */}
+          <form
+            onSubmit={handleSearch}
+            className="flex items-center bg-white rounded-2xl p-1.5 shadow-[0_6px_25px_rgba(15,41,26,0.08)] border border-slate-300/80 max-w-2xl mx-auto mb-6 text-slate-800 focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-600/10 transition-all"
+            role="search"
+            aria-label="Rechercher des produits ou boutiques"
+          >
+            <label htmlFor="hero-search" className="sr-only">
+              Rechercher des produits ou boutiques
+            </label>
+            <div className="pl-3.5 text-slate-400">
+              <Search className="w-5 h-5" aria-hidden="true" />
+            </div>
+            <input
+              id="hero-search"
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Que recherchez-vous ? (ex: iPhone, Robe, Sac de riz...)"
+              className="flex-1 py-3 px-3 text-slate-800 outline-none bg-transparent text-sm md:text-base placeholder:text-slate-400"
+            />
+            <button
+              type="submit"
+              className="btn-brand shrink-0 py-3 px-5 sm:px-7 text-sm font-bold rounded-xl flex items-center gap-2 cursor-pointer shadow-sm"
             >
-              {cat}
-            </Link>
-          ))}
+              <span>Chercher</span>
+              <ArrowRight className="w-4 h-4 hidden sm:inline" />
+            </button>
+          </form>
+
+          {/* Popular Tag Chips */}
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
+            <span className="text-slate-500 font-semibold">Recherches fréquentes :</span>
+            {popularQueries.map((item) => (
+              <Link
+                key={item.label}
+                href={`/search?q=${encodeURIComponent(item.query)}`}
+                className="bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200/90 px-3 py-1.5 rounded-lg transition-colors font-semibold shadow-xs"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
 
-        {/* Stats row */}
-        <div className="flex items-center justify-center gap-8 mt-12 pt-12 border-t border-white/10">
-          {[
-            { label: "Boutiques", value: "100+" },
-            { label: "Produits", value: "1 000+" },
-            { label: "Marchands", value: "50+" },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-2xl font-extrabold text-white">{stat.value}</div>
-              <div className="text-xs text-green-200 mt-0.5">{stat.label}</div>
+        {/* Real Commerce Pillars - Light, clean, trustworthy */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12 pt-8 border-t border-slate-200/70 max-w-4xl mx-auto">
+          <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700 shrink-0 mt-0.5">
+              <MessageCircle className="w-5 h-5" />
             </div>
-          ))}
+            <div className="text-left">
+              <h3 className="text-sm font-bold text-slate-900 mb-0.5">Contact WhatsApp Direct</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Discutez avec le vendeur, négociez et convenez du mode de livraison sans intermédiaire.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700 shrink-0 mt-0.5">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-sm font-bold text-slate-900 mb-0.5">Marchands Certifiés</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Boutiques authentifiées avec numéro de téléphone professionnel et localisation vérifiée.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-green-50 border border-green-200/80 flex items-center justify-center text-green-700 shrink-0 mt-0.5">
+              <Store className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-sm font-bold text-slate-900 mb-0.5">Stock Réel en Ville</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Articles disponibles physiquement dans les magasins de votre agglomération.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white/5 to-transparent pointer-events-none" />
     </section>
   );
 }

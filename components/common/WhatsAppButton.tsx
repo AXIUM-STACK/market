@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { FaWhatsapp } from "react-icons/fa";
 import { buildProductWhatsAppUrl, buildShopWhatsAppUrl } from "@/lib/whatsapp";
 

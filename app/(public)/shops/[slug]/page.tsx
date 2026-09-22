@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { getCurrentClerkId } from "@/lib/clerk";
 import { getUserFavoriteIds } from "@/app/actions/favorites";
@@ -11,9 +10,8 @@ import ShareButton from "@/components/common/ShareButton";
 import VerifiedBadge from "@/components/common/VerifiedBadge";
 import EmptyState from "@/components/common/EmptyState";
 import Pagination from "@/components/common/Pagination";
-import { buildImageKitUrl } from "@/lib/utils";
+import { buildImageKitUrl, formatDate } from "@/lib/utils";
 import { Store, Package, Calendar } from "lucide-react";
-import { formatDate } from "@/lib/utils";
 import type { ProductCard as ProductCardType } from "@/types";
 
 const PAGE_SIZE = 12;
@@ -40,7 +38,7 @@ export async function generateMetadata({ params }: ShopPageProps): Promise<Metad
     title: `${shop.name} | AXIUMarket`,
     description:
       shop.description?.slice(0, 155) ??
-      `Découvrez les produits de la boutique ${shop.name} sur AXIUMarket.`,
+      `Découvrez les produits de la boutique ${shop.name} sur AXIUMarket. Contact direct WhatsApp.`,
     openGraph: {
       title: `${shop.name} | AXIUMarket`,
       description: shop.description?.slice(0, 155) ?? "",
@@ -106,25 +104,17 @@ export default async function ShopDetailPage({ params, searchParams }: ShopPageP
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const logoUrl = shop.logoUrl
-    ? buildImageKitUrl(shop.logoUrl, { width: 100, height: 100 })
+    ? buildImageKitUrl(shop.logoUrl, { width: 120, height: 120, quality: 80 })
     : null;
   const coverUrl = shop.coverImageUrl
-    ? buildImageKitUrl(shop.coverImageUrl, { width: 1200, height: 400, quality: 80 })
+    ? buildImageKitUrl(shop.coverImageUrl, { width: 1400, height: 400, quality: 80 })
     : null;
 
   return (
     <div>
-      {/* Shop Header / Cover */}
+      {/* Storefront Cover Banner */}
       <div className="relative">
-        {/* Cover Image */}
-        <div
-          className="h-48 md:h-64 w-full relative overflow-hidden"
-          style={{
-            background: coverUrl
-              ? undefined
-              : "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 60%, #bbf7d0 100%)",
-          }}
-        >
+        <div className="h-44 sm:h-60 md:h-72 w-full relative overflow-hidden bg-forest-950" style={{ backgroundColor: "var(--color-forest-950)" }}>
           {coverUrl && (
             <Image
               src={coverUrl}
@@ -135,110 +125,116 @@ export default async function ShopDetailPage({ params, searchParams }: ShopPageP
               priority
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         </div>
 
-        {/* Shop Info Overlay */}
+        {/* Shop Info Overlay Card */}
         <div className="axm-container">
-          <div className="flex items-end gap-4 -mt-8 relative z-10">
-            {/* Logo */}
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-white shrink-0">
-              {logoUrl ? (
-                <Image
-                  src={logoUrl}
-                  alt={`Logo de ${shop.name}`}
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-green-50">
-                  <Store className="w-8 h-8 text-green-600" aria-hidden="true" />
+          <div className="relative z-10 -mt-12 sm:-mt-16 bg-white rounded-3xl border border-slate-200/90 shadow-[0_6px_25px_rgba(15,41,26,0.06)] p-5 sm:p-7">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+              {/* Left: Avatar + Title */}
+              <div className="flex items-start sm:items-center gap-4">
+                <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl border-3 border-white shadow-md overflow-hidden bg-white shrink-0 -mt-10 sm:-mt-12">
+                  {logoUrl ? (
+                    <Image
+                      src={logoUrl}
+                      alt={`Logo de ${shop.name}`}
+                      width={88}
+                      height={88}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-green-50 text-green-700">
+                      <Store className="w-9 h-9" aria-hidden="true" />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Name & Status */}
-            <div className="pb-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl md:text-2xl font-extrabold text-slate-900">
-                  {shop.name}
-                </h1>
-                {shop.merchant.isVerified && <VerifiedBadge />}
-                {shop.status === "PAUSED" && (
-                  <span className="badge badge-sm badge-paused border">Pausée</span>
-                )}
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                      {shop.name}
+                    </h1>
+                    {shop.merchant.isVerified && <VerifiedBadge size="md" />}
+                    {shop.status === "PAUSED" && (
+                      <span className="badge badge-sm badge-paused border">Pausée</span>
+                    )}
+                  </div>
+                  {shop.merchant.displayName && (
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+                      Gérant : {shop.merchant.displayName}
+                    </p>
+                  )}
+                </div>
               </div>
-              {shop.merchant.displayName && (
-                <p className="text-sm text-slate-500">
-                  par {shop.merchant.displayName}
-                </p>
-              )}
-            </div>
-          </div>
 
-          {/* Shop Meta */}
-          <div className="mt-4 pb-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex-1">
+              {/* Right: Actions */}
+              <div className="flex items-center gap-2.5 w-full md:w-auto flex-wrap">
+                <WhatsAppButton
+                  variant="shop"
+                  shopName={shop.name}
+                  whatsappNumber={shop.merchant.whatsappNumber}
+                  size="md"
+                />
+                <ShareButton
+                  details={{
+                    type: "shop",
+                    name: shop.name,
+                    merchantName: shop.merchant.displayName || undefined,
+                    totalProducts: total,
+                    description: shop.description,
+                    imageUrl: shop.coverImageUrl
+                      ? buildImageKitUrl(shop.coverImageUrl, { width: 1200, height: 600, quality: 85 })
+                      : shop.logoUrl
+                      ? buildImageKitUrl(shop.logoUrl, { width: 500, height: 500, quality: 85 })
+                      : null,
+                    url: `/shops/${shop.slug}`,
+                  }}
+                  size="md"
+                  label="Partager"
+                />
+              </div>
+            </div>
+
+            {/* Shop Bio & Stats */}
+            <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-slate-500">
               {shop.description && (
-                <p className="text-sm text-slate-600 leading-relaxed max-w-2xl">
+                <p className="text-slate-600 leading-relaxed max-w-2xl text-xs sm:text-sm">
                   {shop.description}
                 </p>
               )}
-              <div className="flex items-center gap-4 mt-3 text-xs text-slate-400">
-                <span className="flex items-center gap-1">
-                  <Package className="w-3.5 h-3.5" aria-hidden="true" />
-                  {total} produit{total !== 1 ? "s" : ""}
+              <div className="flex items-center gap-4 text-xs shrink-0">
+                <span className="flex items-center gap-1.5 font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
+                  <Package className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                  {total} article{total !== 1 ? "s" : ""}
                 </span>
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1.5 text-slate-400">
                   <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
-                  Depuis {formatDate(shop.createdAt)}
+                  Membre depuis {formatDate(shop.createdAt)}
                 </span>
               </div>
-            </div>
-            <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
-              <WhatsAppButton
-                variant="shop"
-                shopName={shop.name}
-                whatsappNumber={shop.merchant.whatsappNumber}
-                size="md"
-              />
-              <ShareButton
-                details={{
-                  type: "shop",
-                  name: shop.name,
-                  merchantName: shop.merchant.displayName || undefined,
-                  totalProducts: total,
-                  description: shop.description,
-                  imageUrl: shop.coverImageUrl
-                    ? buildImageKitUrl(shop.coverImageUrl, { width: 1200, height: 600, quality: 85 })
-                    : shop.logoUrl
-                    ? buildImageKitUrl(shop.logoUrl, { width: 500, height: 500, quality: 85 })
-                    : null,
-                  url: `/shops/${shop.slug}`,
-                }}
-                size="md"
-                label="Partager la boutique"
-              />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Products Grid */}
-      <div className="axm-container py-8">
-        <h2 className="text-lg font-bold text-slate-800 mb-5">
-          Produits de la boutique
-        </h2>
+      {/* Products Catalog Grid */}
+      <div className="axm-container py-10">
+        <div className="mb-6 pb-3 border-b border-slate-200/80 flex items-center justify-between">
+          <h2 className="text-lg sm:text-xl font-black text-slate-900">
+            Rayon de la boutique ({total})
+          </h2>
+        </div>
+
         {products.length === 0 ? (
           <EmptyState
             variant="products"
-            title="Pas encore de produits"
-            description="Cette boutique n'a pas encore publié de produits."
+            title="Aucun article en rayon"
+            description="Cette boutique n'a pas encore publié d'articles actifs."
           />
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
               {products.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -248,11 +244,16 @@ export default async function ShopDetailPage({ params, searchParams }: ShopPageP
                 />
               ))}
             </div>
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              basePath={`/shops/${slug}`}
-            />
+
+            {totalPages > 1 && (
+              <div className="mt-8">
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  basePath={`/shops/${slug}`}
+                />
+              </div>
+            )}
           </>
         )}
       </div>

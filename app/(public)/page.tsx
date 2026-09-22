@@ -37,124 +37,139 @@ async function getHomePageData() {
 
     const [categories, featuredProducts, certifiedShops, recentProducts] =
       await Promise.all([
-          // Active categories with product counts
-          prisma.category.findMany({
-            where: { isActive: true, parentId: null },
-            include: {
-              _count: {
-                select: {
-                  products: {
-                    where: {
-                      status: "ACTIVE",
-                      isBlocked: false,
-                      deletedAt: null,
-                      shop: activeShopWhere,
-                    },
-                  },
-                },
-              },
-              children: {
-                select: { id: true, name: true, slug: true },
-                where: { isActive: true },
-              },
-            },
-            orderBy: { name: "asc" },
-            take: 8,
-          }),
-
-          // Active products for carousel (featured first)
-          prisma.product.findMany({
-            where: {
-              status: "ACTIVE",
-              isBlocked: false,
-              deletedAt: null,
-              shop: activeShopWhere,
-            },
-            include: {
-              images: {
-                select: { url: true, altText: true, sortOrder: true },
-                orderBy: { sortOrder: "asc" },
-                take: 1,
-              },
-              shop: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                  logoUrl: true,
-                  status: true,
-                  merchant: {
-                    select: { isVerified: true, whatsappNumber: true },
-                  },
-                },
-              },
-              category: { select: { id: true, name: true, slug: true } },
-              _count: { select: { favorites: true } },
-            },
-            orderBy: [{ isFeatured: "desc" }, { viewCount: "desc" }, { createdAt: "desc" }],
-            take: 16,
-          }),
-
-          // Certified + active shops, ordered from newest to oldest
-          prisma.shop.findMany({
-            where: {
-              ...activeShopWhere,
-              merchant: {
-                isVerified: true,
-                isActive: true,
-              },
-            },
-            include: {
-              merchant: {
-                select: { isVerified: true, whatsappNumber: true, displayName: true },
-              },
-              _count: {
-                select: {
-                  products: {
-                    where: { status: "ACTIVE", isBlocked: false, deletedAt: null },
+        // Active categories with product counts
+        prisma.category.findMany({
+          where: { isActive: true, parentId: null },
+          include: {
+            _count: {
+              select: {
+                products: {
+                  where: {
+                    status: "ACTIVE",
+                    isBlocked: false,
+                    deletedAt: null,
+                    shop: activeShopWhere,
                   },
                 },
               },
             },
-            orderBy: { createdAt: "desc" },
-            take: 12,
-          }),
-
-          // Recently added active products
-          prisma.product.findMany({
-            where: {
-              status: "ACTIVE",
-              isBlocked: false,
-              deletedAt: null,
-              shop: activeShopWhere,
+            children: {
+              select: { id: true, name: true, slug: true },
+              where: { isActive: true },
             },
-            include: {
-              images: {
-                select: { url: true, altText: true, sortOrder: true },
-                orderBy: { sortOrder: "asc" },
-                take: 1,
-              },
-              shop: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                  logoUrl: true,
-                  status: true,
-                  merchant: {
-                    select: { isVerified: true, whatsappNumber: true },
-                  },
+          },
+          orderBy: { name: "asc" },
+          take: 8,
+        }),
+
+        // Active products for carousel (featured first)
+        prisma.product.findMany({
+          where: {
+            status: "ACTIVE",
+            isBlocked: false,
+            deletedAt: null,
+            shop: activeShopWhere,
+          },
+          include: {
+            images: {
+              select: { url: true, altText: true, sortOrder: true },
+              orderBy: { sortOrder: "asc" },
+              take: 1,
+            },
+            shop: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                logoUrl: true,
+                status: true,
+                merchant: {
+                  select: { isVerified: true, whatsappNumber: true },
                 },
               },
-              category: { select: { id: true, name: true, slug: true } },
-              _count: { select: { favorites: true } },
             },
-            orderBy: { createdAt: "desc" },
-            take: 8,
-          }),
-        ]);
+            category: { select: { id: true, name: true, slug: true } },
+            _count: { select: { favorites: true } },
+          },
+          orderBy: [{ isFeatured: "desc" }, { viewCount: "desc" }, { createdAt: "desc" }],
+          take: 16,
+        }),
 
-    return { categories, featuredProducts, certifiedShops, recentProducts };
+        // Certified + active shops, ordered from newest to oldest
+        prisma.shop.findMany({
+          where: {
+            ...activeShopWhere,
+            merchant: {
+              isVerified: true,
+              isActive: true,
+            },
+          },
+          include: {
+            merchant: {
+              select: { isVerified: true, whatsappNumber: true, displayName: true },
+            },
+            _count: {
+              select: {
+                products: {
+                  where: { status: "ACTIVE", isBlocked: false, deletedAt: null },
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 12,
+        }),
+
+        // Recently added active products
+        prisma.product.findMany({
+          where: {
+            status: "ACTIVE",
+            isBlocked: false,
+            deletedAt: null,
+            shop: activeShopWhere,
+          },
+          include: {
+            images: {
+              select: { url: true, altText: true, sortOrder: true },
+              orderBy: { sortOrder: "asc" },
+              take: 1,
+            },
+            shop: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                logoUrl: true,
+                status: true,
+                merchant: {
+                  select: { isVerified: true, whatsappNumber: true },
+                },
+              },
+            },
+            category: { select: { id: true, name: true, slug: true } },
+            _count: { select: { favorites: true } },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 8,
+        }),
+      ]);
+
+    const serializedFeaturedProducts = featuredProducts.map((product) => ({
+      ...product,
+      price: Number(product.price),
+    }));
+
+    const serializedRecentProducts = recentProducts.map((product) => ({
+      ...product,
+      price: Number(product.price),
+    }));
+
+    return {
+      categories,
+      featuredProducts: serializedFeaturedProducts,
+      certifiedShops,
+      recentProducts: serializedRecentProducts,
+    };
   } catch (error) {
     console.error("[Homepage Data Fetch Error]:", error);
     return {
@@ -179,14 +194,14 @@ export default async function HomePage() {
 
       {/* 2. Popular Categories */}
       {categories.length > 0 && (
-        <section className="axm-section bg-slate-50" aria-labelledby="categories-heading">
+        <section className="axm-section border-b border-slate-200/60 bg-white" aria-labelledby="categories-heading">
           <div className="axm-container">
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
               <h2 id="categories-heading" className="section-title">
-                Parcourir par catégorie
+                Parcourir par rayon
               </h2>
               <p className="section-subtitle">
-                Trouvez facilement ce que vous cherchez
+                Explorez les spécialités disponibles auprès des commerçants
               </p>
             </div>
             <CategoryGrid categories={categories as CategoryWithCount[]} />
@@ -194,24 +209,24 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 3. Section 1 — Carousel automatique de produits */}
+      {/* 3. Section 1 — Carousel de produits à la une */}
       {featuredProducts.length > 0 && (
-        <section className="axm-section" aria-labelledby="featured-heading">
+        <section className="axm-section border-b border-slate-200/60" aria-labelledby="featured-heading">
           <div className="axm-container">
-            <div className="flex items-end justify-between mb-8">
+            <div className="flex items-end justify-between mb-6 sm:mb-8">
               <div>
                 <h2 id="featured-heading" className="section-title">
                   Produits à la une
                 </h2>
                 <p className="section-subtitle">
-                  Sélectionnés par notre équipe pour vous
+                  Sélectionnés parmi les commerces actifs de votre ville
                 </p>
               </div>
               <Link
                 href="/products?featured=true"
-                className="hidden sm:inline-flex text-sm font-semibold text-green-700 hover:text-green-800 transition-colors items-center gap-1.5"
+                className="hidden sm:inline-flex text-sm font-bold text-green-700 hover:text-green-800 transition-colors items-center gap-1.5"
               >
-                Voir tout le catalogue
+                <span>Tout voir</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -226,25 +241,25 @@ export default async function HomePage() {
 
       {/* 4. Section 2 — Carousel horizontal des boutiques certifiées */}
       {certifiedShops.length > 0 && (
-        <section className="axm-section bg-slate-50" aria-labelledby="certified-shops-heading">
+        <section className="axm-section border-b border-slate-200/60 bg-white" aria-labelledby="certified-shops-heading">
           <div className="axm-container">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-6 sm:mb-8">
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2.5 mb-1">
                   <h2 id="certified-shops-heading" className="section-title">
                     Boutiques certifiées
                   </h2>
-                  <VerifiedBadge size="sm" showLabel={false} />
+                  <VerifiedBadge size="sm" showLabel={true} />
                 </div>
                 <p className="section-subtitle">
-                  Les marchands vérifiés de confiance, de la plus récente à la plus ancienne
+                  Marchands authentifiés avec numéro professionnel vérifié
                 </p>
               </div>
               <Link
                 href="/shops"
-                className="hidden sm:inline-flex text-sm font-semibold text-green-700 hover:text-green-800 transition-colors items-center gap-1.5"
+                className="hidden sm:inline-flex text-sm font-bold text-green-700 hover:text-green-800 transition-colors items-center gap-1.5"
               >
-                Toutes les boutiques
+                <span>Toutes les boutiques</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -255,15 +270,15 @@ export default async function HomePage() {
 
       {/* 5. Recent Products */}
       {recentProducts.length > 0 && (
-        <section className="axm-section" aria-labelledby="recent-heading">
+        <section className="axm-section border-b border-slate-200/60" aria-labelledby="recent-heading">
           <div className="axm-container">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-6 sm:mb-8">
               <div>
                 <h2 id="recent-heading" className="section-title">
-                  Nouvelles arrivées
+                  Nouveautés en rayon
                 </h2>
                 <p className="section-subtitle">
-                  Les derniers produits ajoutés
+                  Les derniers articles publiés par les marchands
                 </p>
               </div>
             </div>

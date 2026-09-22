@@ -1,89 +1,61 @@
 import Link from "next/link";
-import { Store, ChevronRight, Check } from "lucide-react";
-
-const benefits = [
-  "Publiez vos produits gratuitement",
-  "Recevez des clients sur WhatsApp",
-  "Gérez votre boutique depuis votre téléphone",
-  "Visibilité auprès de milliers d'acheteurs",
-];
+import { ArrowRight, Sparkles } from "lucide-react";
 
 export default function MerchantCTA() {
   return (
-    <section
-      className="axm-section"
-      aria-labelledby="merchant-cta-heading"
-    >
+    <section className="axm-section" aria-labelledby="merchant-cta-heading">
       <div className="axm-container">
-        <div
-          className="rounded-3xl p-6 sm:p-8 md:p-12 flex flex-col md:flex-row md:items-center gap-6 md:gap-8 overflow-hidden relative"
-          style={{
-            background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #d1fae5 100%)",
-            border: "1px solid #86efac",
-          }}
-        >
-          {/* Decorative circle */}
-          <div
-            className="absolute -right-16 -top-16 w-48 h-48 rounded-full opacity-20"
-            style={{ backgroundColor: "var(--color-brand-green)" }}
-            aria-hidden="true"
-          />
-          <div
-            className="absolute -right-4 -bottom-8 w-32 h-32 rounded-full opacity-10"
-            style={{ backgroundColor: "var(--color-brand-green)" }}
-            aria-hidden="true"
-          />
+        <div className="rounded-3xl bg-white border border-slate-200/90 shadow-[0_4px_25px_rgba(15,41,26,0.05)] p-6 sm:p-10 md:p-14 overflow-hidden relative">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200/80 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-4">
+              <Sparkles className="w-3.5 h-3.5 text-green-600" />
+              <span>Espace Commerçants & Vendeurs Locaux</span>
+            </div>
 
-          {/* Icon */}
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ backgroundColor: "var(--color-brand-green)" }}
-          >
-            <Store className="w-8 h-8 text-white" aria-hidden="true" />
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 relative z-10">
             <h2
               id="merchant-cta-heading"
-              className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-3"
+              className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-4"
             >
-              Vous avez une boutique ?{" "}
-              <span style={{ color: "var(--color-brand-green)" }}>
-                Rejoignez AXIUMarket.
-              </span>
+              Donnez à votre boutique une vitrine digitale puissante
             </h2>
-            <p className="text-slate-600 text-sm mb-5">
-              Créez votre vitrine digitale en quelques minutes et commencez à
-              recevoir des clients directement sur WhatsApp.
+
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-8">
+              Publiez votre catalogue, touchez de nouveaux clients dans votre ville et concluez vos ventes directement sur WhatsApp sans payer de commission sur chaque transaction.
             </p>
 
-            {/* Benefits */}
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
-              {benefits.map((benefit) => (
-                <li key={benefit} className="flex items-center gap-2 text-sm text-slate-700">
-                  <Check
-                    className="w-4 h-4 shrink-0"
-                    style={{ color: "var(--color-brand-green)" }}
-                    aria-hidden="true"
-                  />
-                  {benefit}
-                </li>
-              ))}
-            </ul>
+            {/* 3 Step Flow */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-xs font-bold text-green-700 block mb-1">Étape 1</span>
+                <p className="text-xs font-semibold text-slate-800">Créez votre profil marchand</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Inscription rapide avec votre numéro WhatsApp.</p>
+              </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-xs font-bold text-green-700 block mb-1">Étape 2</span>
+                <p className="text-xs font-semibold text-slate-800">Ajoutez vos produits</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Photos, prix en CDF/USD et détails de stock.</p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="text-xs font-bold text-green-700 block mb-1">Étape 3</span>
+                <p className="text-xs font-semibold text-slate-800">Vendez en direct</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Les clients vous contactent en un clic.</p>
+              </div>
+            </div>
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <Link
                 href="/sign-up"
-                className="btn btn-brand rounded-xl px-7 py-3 text-sm font-bold flex items-center justify-center gap-2 w-full sm:w-auto text-center"
+                className="btn-brand px-6 py-3.5 text-sm font-bold flex items-center justify-center gap-2 shadow-sm text-center"
               >
-                Créer ma boutique
-                <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                <span>Ouvrir ma boutique gratuitement</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/dashboard"
-                className="btn btn-outline-brand rounded-xl px-4 sm:px-7 py-3 text-sm font-semibold flex items-center justify-center w-full sm:w-auto text-center whitespace-normal sm:whitespace-nowrap"
+                className="btn-outline-brand px-6 py-3.5 text-sm font-semibold flex items-center justify-center text-center hover:bg-green-50"
               >
                 Déjà inscrit ? Mon tableau de bord
               </Link>

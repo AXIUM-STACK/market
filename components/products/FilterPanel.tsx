@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, RotateCcw } from "lucide-react";
 import type { ProductSortOption } from "@/types";
 
 interface FilterPanelProps {
@@ -37,48 +37,62 @@ export default function ProductFiltersPanel({
     [router, pathname, searchParams]
   );
 
+  const hasActiveFilters = Boolean(currentCategory || currentInStock || currentSort !== "newest");
+
   return (
-    <div className="space-y-5">
+    <div className="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-6 shadow-sm">
       {/* Header */}
-      <div className="flex items-center gap-2 font-semibold text-slate-700">
-        <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
-        <span>Filtres</span>
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+          <SlidersHorizontal className="w-4 h-4 text-green-700" aria-hidden="true" />
+          <span>Filtres de recherche</span>
+        </div>
+        {hasActiveFilters && (
+          <button
+            onClick={() => router.push(pathname)}
+            className="text-xs text-slate-500 hover:text-red-600 transition-colors flex items-center gap-1 font-medium"
+            type="button"
+          >
+            <RotateCcw className="w-3 h-3" />
+            <span>Effacer</span>
+          </button>
+        )}
       </div>
 
-      {/* Sort */}
+      {/* Sort Option */}
       <div>
         <label
           htmlFor="sort-select"
           className="form-label"
         >
-          Trier par
+          Trier les résultats
         </label>
         <select
           id="sort-select"
-          className="form-input text-sm"
+          className="form-input text-sm cursor-pointer"
           value={currentSort}
           onChange={(e) => updateParam("sort", e.target.value)}
         >
-          <option value="newest">Plus récents</option>
-          <option value="price_asc">Prix croissant</option>
-          <option value="price_desc">Prix décroissant</option>
-          <option value="popular">Popularité</option>
+          <option value="newest">Plus récents d&apos;abord</option>
+          <option value="price_asc">Prix croissant (CDF)</option>
+          <option value="price_desc">Prix décroissant (CDF)</option>
+          <option value="popular">Articles populaires</option>
         </select>
       </div>
 
-      {/* Category */}
+      {/* Categories */}
       {categories.length > 0 && (
         <div>
           <label htmlFor="category-select" className="form-label">
-            Catégorie
+            Rayon / Catégorie
           </label>
           <select
             id="category-select"
-            className="form-input text-sm"
+            className="form-input text-sm cursor-pointer"
             value={currentCategory ?? ""}
             onChange={(e) => updateParam("category", e.target.value || null)}
           >
-            <option value="">Toutes les catégories</option>
+            <option value="">Tous les rayons</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.slug}>
                 {cat.name}
@@ -88,30 +102,20 @@ export default function ProductFiltersPanel({
         </div>
       )}
 
-      {/* In Stock */}
-      <div>
-        <label className="flex items-center gap-2.5 cursor-pointer group">
+      {/* In Stock Toggle */}
+      <div className="pt-1">
+        <label className="flex items-center gap-2.5 cursor-pointer group select-none">
           <input
             type="checkbox"
-            className="checkbox checkbox-sm"
-            style={{ accentColor: "var(--color-brand-green)" }}
+            className="w-4 h-4 rounded border-slate-300 text-green-700 focus:ring-green-600 focus:ring-offset-0 cursor-pointer"
             checked={currentInStock ?? false}
             onChange={(e) => updateParam("inStock", e.target.checked ? "true" : null)}
           />
-          <span className="text-sm font-medium text-slate-700 group-hover:text-green-700 transition-colors">
+          <span className="text-sm font-medium text-slate-700 group-hover:text-green-800 transition-colors">
             En stock uniquement
           </span>
         </label>
       </div>
-
-      {/* Reset */}
-      <button
-        onClick={() => router.push(pathname)}
-        className="text-sm text-slate-500 hover:text-red-500 transition-colors underline underline-offset-2"
-        type="button"
-      >
-        Réinitialiser les filtres
-      </button>
     </div>
   );
 }

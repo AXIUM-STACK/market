@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, ZoomIn, Package } from "lucide-react";
+import { ChevronLeft, ChevronRight, Package } from "lucide-react";
 import { buildImageKitUrl } from "@/lib/utils";
 import type { ProductImage } from "@/generated/prisma";
 
@@ -25,7 +25,7 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
           style={{ color: "var(--color-neutral-400)" }}
           aria-hidden="true"
         />
-        <p className="text-sm text-slate-400">Pas d'image disponible</p>
+        <p className="text-sm text-slate-400">Pas d&apos;image disponible</p>
       </div>
     );
   }

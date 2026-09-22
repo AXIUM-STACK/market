@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import prisma from "@/lib/prisma";
 import { getCurrentClerkId } from "@/lib/clerk";
 import { getUserFavoriteIds } from "@/app/actions/favorites";
@@ -7,13 +6,12 @@ import ProductCard from "@/components/products/ProductCard";
 import ProductFiltersPanel from "@/components/products/FilterPanel";
 import Pagination from "@/components/common/Pagination";
 import EmptyState from "@/components/common/EmptyState";
-import LoadingSkeleton from "@/components/common/LoadingSkeleton";
 import type { ProductCard as ProductCardType, ProductSortOption } from "@/types";
 import type { Prisma } from "@/generated/prisma";
 
 export const metadata: Metadata = {
-  title: "Tous les produits | AXIUMarket",
-  description: "Explorez tous les produits disponibles sur AXIUMarket.",
+  title: "Catalogue des produits | AXIUMarket",
+  description: "Explorez tous les articles disponibles dans les boutiques de proximité sur AXIUMarket.",
 };
 
 const PAGE_SIZE = 20;
@@ -123,19 +121,20 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   if (featured) currentSearchParams.featured = "true";
 
   return (
-    <div className="axm-container py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900">
-          {q ? `Résultats pour "${q}"` : featured ? "Produits à la une" : "Tous les produits"}
+    <div className="axm-container py-8 sm:py-10">
+      {/* Catalog Title Header */}
+      <div className="mb-6 sm:mb-8 pb-5 border-b border-slate-200/80">
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+          {q ? `Résultats pour "${q}"` : featured ? "Articles en vedette" : "Tous les produits"}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          {total} produit{total !== 1 ? "s" : ""} trouvé{total !== 1 ? "s" : ""}
+        <p className="text-sm text-slate-500 mt-1 font-medium">
+          {total} article{total !== 1 ? "s" : ""} disponible{total !== 1 ? "s" : ""} en magasin
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar Filters */}
-        <aside className="lg:w-60 shrink-0">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
+        {/* Sticky Filters Sidebar */}
+        <aside className="w-full lg:w-64 shrink-0 lg:sticky lg:top-24">
           <ProductFiltersPanel
             categories={categories}
             currentSort={sort}
@@ -144,17 +143,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           />
         </aside>
 
-        {/* Product Grid */}
-        <div className="flex-1">
+        {/* Product Grid Area */}
+        <div className="flex-1 min-w-0 w-full">
           {products.length === 0 ? (
             <EmptyState
               variant="products"
-              actionLabel="Voir tous les produits"
+              title="Aucun article trouvé"
+              description="Aucun produit ne correspond à ces critères dans les boutiques actives."
+              actionLabel="Voir tout le catalogue"
               actionHref="/products"
             />
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -164,12 +165,17 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   />
                 ))}
               </div>
-              <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                basePath="/products"
-                searchParams={currentSearchParams}
-              />
+
+              {totalPages > 1 && (
+                <div className="mt-8">
+                  <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    basePath="/products"
+                    searchParams={currentSearchParams}
+                  />
+                </div>
+              )}
             </>
           )}
         </div>

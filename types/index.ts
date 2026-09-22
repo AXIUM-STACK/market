@@ -25,7 +25,8 @@ export type { ShopStatus, ProductStatus, UserRole };
 // ============================================================
 
 /** Product with its primary image and shop info (for cards) */
-export type ProductCard = Product & {
+export type ProductCard = Omit<Product, "price"> & {
+  price: number | string | Product["price"];
   images: Pick<ProductImage, "url" | "altText" | "sortOrder">[];
   shop: Pick<Shop, "id" | "name" | "slug" | "logoUrl" | "status"> & {
     merchant: Pick<MerchantProfile, "isVerified" | "whatsappNumber">;

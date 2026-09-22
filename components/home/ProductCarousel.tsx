@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "@/components/products/ProductCard";
 import type { ProductCard as ProductCardType } from "@/types";
 
@@ -9,17 +9,14 @@ interface ProductCarouselProps {
   products: ProductCardType[];
   favoriteIds?: Set<string>;
   currentUserId?: string | null;
-  autoPlayInterval?: number;
 }
 
 export default function ProductCarousel({
   products,
   favoriteIds = new Set(),
   currentUserId = null,
-  autoPlayInterval = 4500,
 }: ProductCarouselProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -32,7 +29,6 @@ export default function ProductCarousel({
     setCanScrollLeft(scrollLeft > 10);
     setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
 
-    // Calculate approximate current index
     const cardWidth = el.firstElementChild
       ? (el.firstElementChild as HTMLElement).offsetWidth + 16
       : 1;
@@ -40,7 +36,7 @@ export default function ProductCarousel({
     setCurrentIndex(Math.min(index, products.length - 1));
   }, [products.length]);
 
-  // Scroll by a specific amount or next item
+  // Scroll by step
   const scroll = useCallback(
     (direction: "left" | "right") => {
       const el = containerRef.current;
@@ -52,27 +48,11 @@ export default function ProductCarousel({
       if (direction === "left") {
         el.scrollBy({ left: -step, behavior: "smooth" });
       } else {
-        const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 20;
-        if (isAtEnd) {
-          el.scrollTo({ left: 0, behavior: "smooth" });
-        } else {
-          el.scrollBy({ left: step, behavior: "smooth" });
-        }
+        el.scrollBy({ left: step, behavior: "smooth" });
       }
     },
     []
   );
-
-  // Auto-play timer with pause on hover/interaction
-  useEffect(() => {
-    if (isPaused || products.length <= 2) return;
-
-    const timer = setInterval(() => {
-      scroll("right");
-    }, autoPlayInterval);
-
-    return () => clearInterval(timer);
-  }, [isPaused, products.length, autoPlayInterval, scroll]);
 
   // Listen to scroll events to update arrow buttons
   useEffect(() => {
@@ -94,20 +74,14 @@ export default function ProductCarousel({
   }
 
   return (
-    <div
-      className="relative group/carousel"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setIsPaused(false)}
-    >
-      {/* Navigation Arrows (Desktop & Mobile) */}
+    <div className="relative group/carousel">
+      {/* Navigation Arrows (Desktop & Tablet) */}
       <button
         type="button"
-        aria-label="Produits précédents"
+        aria-label="Voir les produits précédents"
         onClick={() => scroll("left")}
         disabled={!canScrollLeft}
-        className={`absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm border border-slate-200 shadow-lg flex items-center justify-center text-slate-700 hover:bg-white hover:text-green-600 transition-all ${
+        className={`hidden sm:flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md items-center justify-center text-slate-700 hover:text-green-700 hover:border-green-600 transition-all ${
           !canScrollLeft ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
       >
@@ -116,10 +90,10 @@ export default function ProductCarousel({
 
       <button
         type="button"
-        aria-label="Produits suivants"
+        aria-label="Voir les produits suivants"
         onClick={() => scroll("right")}
         disabled={!canScrollRight}
-        className={`absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm border border-slate-200 shadow-lg flex items-center justify-center text-slate-700 hover:bg-white hover:text-green-600 transition-all ${
+        className={`hidden sm:flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md items-center justify-center text-slate-700 hover:text-green-700 hover:border-green-600 transition-all ${
           !canScrollRight ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
       >
@@ -129,7 +103,7 @@ export default function ProductCarousel({
       {/* Horizontal Carousel Track */}
       <div
         ref={containerRef}
-        className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 pt-1 px-1 -mx-1"
+        className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-3 pt-1 px-1 -mx-1"
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
@@ -150,7 +124,7 @@ export default function ProductCarousel({
         ))}
       </div>
 
-      {/* Progress Dots Indicator */}
+      {/* Progress Dots Indicator (Subtle status without jumping) */}
       {products.length > 4 && (
         <div className="flex justify-center items-center gap-1.5 mt-4" aria-hidden="true">
           {Array.from({ length: Math.min(6, Math.ceil(products.length / 2)) }).map((_, dotIdx) => {
@@ -158,10 +132,10 @@ export default function ProductCarousel({
             return (
               <span
                 key={dotIdx}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
+                className={`h-1.5 rounded-full transition-all duration-200 ${
                   isActive
-                    ? "w-6 bg-green-600"
-                    : "w-1.5 bg-slate-200 hover:bg-slate-300"
+                    ? "w-5 bg-green-700"
+                    : "w-1.5 bg-slate-200"
                 }`}
               />
             );
